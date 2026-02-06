@@ -1,0 +1,30 @@
+[
+  {
+    "date": "2025-12-01",
+    "totalMachines": 32,
+    "userFlags": 32,
+    "rootFlags": 32,
+    "points": 102
+  },
+  {
+    "date": "2025-12-15",
+    "totalMachines": 33,
+    "userFlags": 33,
+    "rootFlags": 33,
+    "points": 152
+  },
+  {
+    "date": "2026-01-01",
+    "totalMachines": 37,
+    "userFlags": 37,
+    "rootFlags": 37,
+    "points": 122
+  },
+  {
+    "date": "2026-01-15",
+    "totalMachines": 42,
+    "userFlags": 42,
+    "rootFlags": 42,
+    "points": 142
+  }
+]
