@@ -1,0 +1,111 @@
+{
+  "userId": "123456",
+  "username": "example_user",
+  "rank": "Hacker",
+  "points": 142,
+  "userOwns": 42,
+  "rootOwns": 42,
+  "machines": [
+    {
+      "id": "1",
+      "name": "Photobomb",
+      "os": "Linux",
+      "difficulty": "Easy",
+      "userFlag": true,
+      "rootFlag": true,
+      "completedDate": "2026-01-15",
+      "points": 20
+    },
+    {
+      "id": "2",
+      "name": "MetaTwo",
+      "os": "Linux",
+      "difficulty": "Medium",
+      "userFlag": true,
+      "rootFlag": true,
+      "completedDate": "2026-01-12",
+      "points": 30
+    },
+    {
+      "id": "3",
+      "name": "Support",
+      "os": "Windows",
+      "difficulty": "Easy",
+      "userFlag": true,
+      "rootFlag": true,
+      "completedDate": "2026-01-10",
+      "points": 20
+    },
+    {
+      "id": "4",
+      "name": "Ambassador",
+      "os": "Linux",
+      "difficulty": "Medium",
+      "userFlag": true,
+      "rootFlag": true,
+      "completedDate": "2026-01-08",
+      "points": 30
+    },
+    {
+      "id": "5",
+      "name": "Shoppy",
+      "os": "Linux",
+      "difficulty": "Easy",
+      "userFlag": true,
+      "rootFlag": true,
+      "completedDate": "2026-01-05",
+      "points": 20
+    },
+    {
+      "id": "6",
+      "name": "Format",
+      "os": "Linux",
+      "difficulty": "Medium",
+      "userFlag": true,
+      "rootFlag": true,
+      "completedDate": "2026-01-03",
+      "points": 30
+    },
+    {
+      "id": "7",
+      "name": "Precious",
+      "os": "Linux",
+      "difficulty": "Easy",
+      "userFlag": true,
+      "rootFlag": true,
+      "completedDate": "2025-12-28",
+      "points": 20
+    },
+    {
+      "id": "8",
+      "name": "Awkward",
+      "os": "Linux",
+      "difficulty": "Hard",
+      "userFlag": true,
+      "rootFlag": true,
+      "completedDate": "2025-12-25",
+      "points": 40
+    },
+    {
+      "id": "9",
+      "name": "Response",
+      "os": "Windows",
+      "difficulty": "Easy",
+      "userFlag": true,
+      "rootFlag": true,
+      "completedDate": "2025-12-20",
+      "points": 20
+    },
+    {
+      "id": "10",
+      "name": "Cerberus",
+      "os": "Linux",
+      "difficulty": "Insane",
+      "userFlag": true,
+      "rootFlag": true,
+      "completedDate": "2025-12-15",
+      "points": 50
+    }
+  ],
+  "scrapedAt": "2026-01-19T16:00:00Z"
+}
