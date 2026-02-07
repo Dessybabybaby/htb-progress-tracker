@@ -49,12 +49,12 @@
 ## Features
 
 - **Automated profile scraping** - Monitors HTB public profile
-- **Completion tracking** - Detects newly pwned machines
+- **Completion tracking** - Detects newly owned machines
 - **Historical data** - Stores progression over time
 - **Interactive dashboard** - Charts, tables, and statistics
 - **Difficulty breakdown** - Easy/Medium/Hard/Insane stats
-- **Achievement notifications** - Slack/Discord alerts for new completions
-- **Export capabilities** - JSON/CSV data export
+- **Achievement notifications** - Slack/Discord/email alerts for new completions
+- **Export capabilities** - JSON/CSV/HTML data export
 - **No API required** - Uses public profile scraping
 
 ---
@@ -76,7 +76,7 @@ Full walkthrough available after workflow build.
 - **HackTheBox account** with public profile
 
 **Optional:**
-- **Slack/Discord** for notifications
+- **Slack/Discord/Email** for notifications
 - **Web server** to host dashboard
 
 ---
@@ -86,7 +86,7 @@ Full walkthrough available after workflow build.
 ### Quick Start: Import Workflow (5 minutes)
 
 1. **Download workflow:**
-   - [Releases](https://github.com/YOUR_USERNAME/htb-progress-tracker/releases)
+   - [Releases](https://github.com/Dessybabybaby/htb-progress-tracker/releases)
    - Download `htb-tracker-workflow.json`
 
 2. **Import to n8n:**
@@ -98,7 +98,7 @@ Full walkthrough available after workflow build.
 
 4. **Execute workflow:**
    - Click "Execute Workflow"
-   - Dashboard generated at `/tmp/htb-dashboard.html`
+   - Dashboard generated at `dashboard.html`
 
 5. **Schedule automated tracking:**
    - Replace Manual Trigger with Schedule Trigger (weekly)
@@ -124,7 +124,7 @@ Full walkthrough available after workflow build.
 **Manual Execution:**
 1. Open workflow
 2. Click "Execute Workflow"
-3. View dashboard: `/tmp/htb-dashboard.html`
+3. View dashboard: `dashboard.html`
 
 **Scheduled (Weekly):**
 1. Add Schedule Trigger (Sunday 11:59 PM)
@@ -194,7 +194,7 @@ Full walkthrough available after workflow build.
 ### Running Test
 
 1. Download sample data
-2. Place `htb-profile-snapshot.json` in `/tmp/`
+2. Place `htb-profile-snapshot.json`
 3. Execute workflow
 4. Compare output with `dashboard-sample.html`
 
@@ -208,7 +208,7 @@ Full walkthrough available after workflow build.
 | **Scraping fails** | HTB may have changed HTML structure; update selectors |
 | **No new completions** | Working as expected - only shows changes since last run |
 | **Chart not rendering** | Check browser console; verify Chart.js CDN loaded |
-| **Old data not loading** | Verify `/tmp/htb-progress.json` exists and is readable |
+| **Old data not loading** | Verify `htb-progress.json` exists and is readable |
 
 **Enable Debug Mode:**
 ```javascript
@@ -252,6 +252,7 @@ MIT License - see [LICENSE](LICENSE)
 
 - Inspired by [Mad Hat](https://youtube.com/@MadHat) - CTF and pentesting content
 - Built with [n8n.io](https://n8n.io)
+- Data provided by [HackTheBox](https://www.hackthebox.com)
 - Dashboard powered by [Chart.js](https://www.chartjs.org)
 
 ---
@@ -261,7 +262,7 @@ MIT License - see [LICENSE](LICENSE)
 **Creator:** [Achusi Desmond]
 - Portfolio: [My Story](https://Dessybabybaby.github.io/portfolio-site)
 - GitHub: [Dessybabybay](https://github.com/Dessybabybaby)
-- LinkedIn: [Achusi Desond](https://linkedin.com/in/achusi-desmond)
+- LinkedIn: [Achusi Desmond](https://linkedin.com/in/achusi-desmond)
 
 ---
 
