@@ -31,7 +31,7 @@
 ### Step 4: Test Execution
 
 1. Click "Execute Workflow"
-2. Check dashboard: `/tmp/htb-dashboard.html`
+2. Check dashboard: `htb-dashboard.html`
 3. Verify stats match your profile
 
 ---
@@ -82,7 +82,7 @@
 - HTB API may have changed (check for errors)
 
 **No dashboard generated:**
-- Check file permissions on `/tmp/`
+- Check file permissions
 - Verify Chart.js CDN is accessible
 - Review execution logs or
 - Ensure the Save HTML Dashboard node has permission to convert the file
