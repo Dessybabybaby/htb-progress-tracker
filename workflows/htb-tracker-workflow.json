@@ -1,0 +1,307 @@
+{
+  "name": "HackTheBox Progress Tracker",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "10db9675-e7c2-44ee-bf32-8b83a42c49ae",
+      "name": "When clicking \"Execute Workflow\"",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const htbUserId = 'USER ID'; \n\n// We change this to the 'profile/content' endpoint to get specific machine data\nconst apiUrl = `https://www.hackthebox.com/api/v4/user/public/profile/${htbUserId}`;\nconst activityUrl = `https://www.hackthebox.com/api/v4/user/profile/activity/${htbUserId}`;\n\nreturn [{\n  json: {\n    userId: htbUserId,\n    profileApi: apiUrl,\n    activityApi: activityUrl, // We will use this to get the machines for your table\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "b83fee23-ee14-4639-871d-a0d05851a72e",
+      "name": "Load HTB Profile URL",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        176,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "d2cec4d1-c109-4cee-a3d7-4e1dc21dca7e",
+      "name": "Fetch HTB Profile Data",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        400,
+        48
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\n\n// Extracting the data object from your provided output structure\nconst profile = input.data || {};\n\n// Keeping the activity logic as requested, even if current input is empty\nconst activity = input.profile?.activity || [];\n\nconst pwnedMachines = activity\n    .filter(item => item.type === 'machine')\n    .map(m => ({\n        name: m.name,\n        os: m.os,\n        difficulty: m.difficulty,\n        date: m.date,\n        stars: m.stars || 0,\n        type: m.type\n    }));\n\nreturn [{\n    json: {\n        username: profile.name || 'Unknown User', // Dynamically sets 'desmondachusi' based on your input\n        fullName: profile.full_name || 'N/A',\n        country: profile.country ? profile.country.name : 'Unknown',\n        userOwns: profile.system_owns || 0,\n        rootOwns: profile.root_owns || 0,\n        points: profile.points || 0,\n        rank: profile.rank || 'Unranked',\n        machines: pwnedMachines,\n        processedAt: new Date().toISOString()\n    }\n}];"
+      },
+      "id": "9472d6eb-7843-4eed-814d-2f6e398a6a44",
+      "name": "Parse Profile Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        624,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const staticData = $getWorkflowStaticData('global');\nconst current = $input.first().json;\n\n// 1. Initialize storage if empty\nif (!staticData.history) staticData.history = [];\n\n// 2. Get the last recorded entry\nconst previous = staticData.history.length > 0 \n    ? staticData.history[staticData.history.length - 1] \n    : null;\n\n// 3. Determine if data has changed to avoid duplicate entries\nconst hasChanged = !previous || (\n    current.userOwns !== previous.userOwns || \n    current.rootOwns !== previous.rootOwns || \n    current.points !== previous.points\n);\n\nif (hasChanged) {\n    staticData.history.push({\n        date: new Date().toISOString().split('T')[0],\n        totalMachines: current.userOwns,\n        points: current.points,\n        rank: current.rank\n    });\n    \n    // Keep last 365 days of history for the line chart\n    if (staticData.history.length > 365) staticData.history.shift();\n}\n\nreturn [{\n    json: {\n        ...current,\n        history: staticData.history,\n        isFirstRun: previous === null\n    }\n}];"
+      },
+      "id": "a3993830-3bed-4953-a86d-0f68c52c636d",
+      "name": "Load Previous Snapshot",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        848,
+        48
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Get the input safely\nconst item = $input.first().json;\n\n// 2. Extract values with fallbacks (handles nested or flat structures)\nconst current = item.current || item.summary || {};\nconst previous = item.previous || {};\nconst isFirstRun = item.isFirstRun || (Object.keys(previous).length === 0);\n\nconst achievements = [];\n\n// 3. Logic with safety checks\nif (isFirstRun) {\n    achievements.push({ \n        type: 'initial', \n        message: `Started tracking! Current Machines: ${current.userOwns || 0}` \n    });\n} else if (current && previous) {\n    // Only compare if both exist and have data\n    if ((current.userOwns || 0) > (previous.userOwns || 0)) {\n        achievements.push({ message: `${current.userOwns - previous.userOwns} new user flag(s)!` });\n    }\n    if ((current.rootOwns || 0) > (previous.rootOwns || 0)) {\n        achievements.push({ message: ` ${current.rootOwns - previous.rootOwns} new root flag(s)!` });\n    }\n    if (current.rank && previous.rank && current.rank !== previous.rank) {\n        achievements.push({ message: `Rank up: ${current.rank}!` });\n    }\n}\n\nreturn [{ \n    json: { \n        ...item, \n        achievements, \n        hasNewAchievements: achievements.length > 0 \n    } \n}];"
+      },
+      "id": "bbe90d67-e32f-4038-b05c-d047bd74a007",
+      "name": "Detect New Achievements",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1072,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Get the current data from the previous node\nconst currentData = $input.first().json.current;\n\n// 2. Access n8n's internal storage for this workflow\nconst staticData = $getWorkflowStaticData('global');\n\n// 3. Update the storage\nstaticData.lastKnownProgress = currentData;\n\n// 4. (Optional) Initialize a history array if you want charts later\nif (!staticData.history) {\n  staticData.history = [];\n}\n\n// Only add to history if it's new data\nconst lastEntry = staticData.history[staticData.history.length - 1];\nif (!lastEntry || lastEntry.points !== currentData.points) {\n  staticData.history.push({\n    ...currentData,\n    timestamp: new Date().toISOString()\n  });\n}\n\n// Keep history manageable (last 100 entries)\nif (staticData.history.length > 100) {\n  staticData.history.shift();\n}\n\nreturn [{\n  json: {\n    message: \"Data persisted successfully in n8n storage\",\n    historyCount: staticData.history.length,\n    current: currentData\n  }\n}];"
+      },
+      "id": "797cd687-3f82-4835-9b54-1c545385bfc8",
+      "name": "Save Current Snapshot",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1296,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\nconst machines = item.machines || [];\n\n// Calculate OS Breakdown\nconst osCounts = machines.reduce((acc, m) => {\n    const os = m.os || 'Other';\n    acc[os] = (acc[os] || 0) + 1;\n    return acc;\n}, {});\n\n// Calculate Difficulty Breakdown\nconst diffCounts = { Easy: 0, Medium: 0, Hard: 0, Insane: 0 };\nmachines.forEach(m => {\n    if (diffCounts.hasOwnProperty(m.difficulty)) {\n        diffCounts[m.difficulty]++;\n    }\n});\n\n// Calculate Average Rating\nconst avgRating = machines.length \n    ? (machines.reduce((sum, m) => sum + (m.stars || 0), 0) / machines.length).toFixed(1) \n    : 0;\n\nreturn [{\n    json: {\n        ...item,\n        stats: {\n            osDistribution: osCounts,\n            difficultyDistribution: diffCounts,\n            averageRating: avgRating,\n            totalPwned: machines.length\n        }\n    }\n}];"
+      },
+      "id": "d65ed2d7-8d94-4fb8-a7b9-47463b3a095f",
+      "name": "Update Progress History",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1520,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\nconst stats = item.stats || {};\nconst machines = item.machines || [];\nconst history = item.history || [];\n\n// Prepare data for the Line Chart\nconst lineLabels = history.map(h => h.date);\nconst lineData = history.map(h => h.totalMachines);\n\n// Prepare data for the Difficulty Pie Chart\nconst diffLabels = Object.keys(stats.difficultyDistribution || {});\nconst diffData = Object.values(stats.difficultyDistribution || {});\n\n// Build the table rows as a clean string to avoid backtick nesting errors\nlet tableRows = \"\";\nconst recentMachines = machines.slice(0, 10);\n\nfor (const m of recentMachines) {\n    tableRows += `\n        <tr>\n            <td><strong>${m.name}</strong></td>\n            <td>${m.difficulty}</td>\n            <td><span class=\"badge ${m.os ? m.os.toLowerCase() : 'unknown'}\">${m.os}</span></td>\n            <td>${m.date}</td>\n        </tr>`;\n}\n\nconst html = `\n<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <script src=\"https://cdn.jsdelivr.net/npm/chart.js\"></script>\n    <style>\n        body { background: #0a0e27; color: #e1e1e1; font-family: sans-serif; padding: 30px; }\n        .dashboard-container { max-width: 1100px; margin: auto; }\n        h1 { color: #9fef00; text-align: center; text-transform: uppercase; letter-spacing: 2px; }\n        .grid-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 30px; }\n        .card { background: rgba(255, 255, 255, 0.05); border: 1px solid #9fef0033; padding: 20px; border-radius: 8px; text-align: center; }\n        .card-val { display: block; font-size: 28px; font-weight: bold; color: #9fef00; }\n        .card-label { font-size: 12px; text-transform: uppercase; color: #888; margin-top: 5px; }\n        .chart-row { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 30px; }\n        .chart-container { background: rgba(255, 255, 255, 0.03); padding: 20px; border-radius: 8px; border: 1px solid #333; }\n        h3 { color: #9fef00; margin-top: 0; font-size: 16px; border-bottom: 1px solid #333; padding-bottom: 10px; }\n        .table-container { background: rgba(255, 255, 255, 0.03); padding: 20px; border-radius: 8px; border: 1px solid #333; }\n        table { width: 100%; border-collapse: collapse; margin-top: 10px; }\n        th { text-align: left; color: #9fef00; padding: 12px; border-bottom: 2px solid #333; }\n        td { padding: 12px; border-bottom: 1px solid #1a1a1a; }\n        .badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }\n        .linux { background: #9fef00; color: #000; }\n        .windows { background: #00a3ff; color: #fff; }\n    </style>\n</head>\n<body>\n    <div class=\"dashboard-container\">\n        <h1>${item.username}'s HTB Progress</h1>\n        <div class=\"grid-cards\">\n            <div class=\"card\"><span class=\"card-val\">${stats.totalPwned || 0}</span><span class=\"card-label\">Machines Pwned</span></div>\n            <div class=\"card\"><span class=\"card-val\">${(item.userOwns || 0) + (item.rootOwns || 0)}</span><span class=\"card-label\">Flags Captured</span></div>\n            <div class=\"card\"><span class=\"card-val\">${stats.averageRating || 0}★</span><span class=\"card-label\">Avg Rating</span></div>\n            <div class=\"card\"><span class=\"card-val\">${item.rank || 'N/A'}</span><span class=\"card-label\">Current Rank</span></div>\n        </div>\n        <div class=\"chart-row\">\n            <div class=\"chart-container\"><h3>Progress Timeline</h3><canvas id=\"lineChart\"></canvas></div>\n            <div class=\"chart-container\"><h3>Difficulty Distribution</h3><canvas id=\"diffChart\"></canvas></div>\n        </div>\n        <div class=\"table-container\">\n            <h3>Recent Completions</h3>\n            <table>\n                <thead><tr><th>Machine</th><th>Difficulty</th><th>OS</th><th>Date</th></tr></thead>\n                <tbody>${tableRows}</tbody>\n            </table>\n        </div>\n    </div>\n    <script>\n        new Chart(document.getElementById('lineChart'), {\n            type: 'line',\n            data: {\n                labels: ${JSON.stringify(lineLabels)},\n                datasets: [{ label: 'Machines', data: ${JSON.stringify(lineData)}, borderColor: '#9fef00', fill: true, backgroundColor: 'rgba(159, 239, 0, 0.1)' }]\n            }\n        });\n        new Chart(document.getElementById('diffChart'), {\n            type: 'doughnut',\n            data: {\n                labels: ${JSON.stringify(diffLabels)},\n                datasets: [{ data: ${JSON.stringify(diffData)}, backgroundColor: ['#9fef00', '#00a3ff', '#ff5555', '#ffcc00'] }]\n            }\n        });\n    </script>\n</body>\n</html>\n`;\n\nreturn [{ json: { dashboard: html } }];"
+      },
+      "id": "667b57d0-ae87-460c-942e-a47249e8c553",
+      "name": "Generate HTML Dashboard",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1744,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "dashboard",
+        "options": {
+          "encoding": "utf8",
+          "fileName": "dashboard.html"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        1968,
+        48
+      ],
+      "id": "aa9d1216-860d-4575-a310-40a8604a0843",
+      "name": "Save HTML Dashboard"
+    },
+    {
+      "parameters": {
+        "subject": "={{ $now.toFormat('yyyy-MM-dd') }} | HTB Progress Report: {{ $('Parse Profile Data').item.json.username }}",
+        "message": "=<p>Hello,</p>\n<p>Here is your daily <strong>Hack The Box</strong> progress update.</p>\n\n<div style=\"background: #f4f4f4; padding: 15px; border-left: 5px solid #9fef00; font-family: sans-serif;\">\n  <strong>Current Stats:</strong><br>\n  User: {{ $('Parse Profile Data').item.json.username }}<br>\n  Machines Owned: {{ $('Parse Profile Data').item.json.userOwns }}<br>\n  Total Points: {{ $('Parse Profile Data').item.json.points }}<br>\n  Rank: {{ $('Parse Profile Data').item.json.rank }}\n</div>\n\n<p>Your interactive progress chart is attached as <strong>dashboard.html</strong>. Simply open the attachment in any web browser to view your stats.</p>\n\n<p>Keep hacking!</p>",
+        "options": {
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {}
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        2176,
+        48
+      ],
+      "id": "76e44427-a453-4721-8f1a-4757ce0a9aca",
+      "name": "Notification",
+      "webhookId": "573828de-1162-49ec-9d9a-cca414e4c64b",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "4rgf3onoG15TrvnQ",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking \"Execute Workflow\"": {
+      "main": [
+        [
+          {
+            "node": "Load HTB Profile URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load HTB Profile URL": {
+      "main": [
+        [
+          {
+            "node": "Fetch HTB Profile Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch HTB Profile Data": {
+      "main": [
+        [
+          {
+            "node": "Parse Profile Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Profile Data": {
+      "main": [
+        [
+          {
+            "node": "Load Previous Snapshot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Previous Snapshot": {
+      "main": [
+        [
+          {
+            "node": "Detect New Achievements",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Detect New Achievements": {
+      "main": [
+        [
+          {
+            "node": "Save Current Snapshot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Current Snapshot": {
+      "main": [
+        [
+          {
+            "node": "Update Progress History",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Progress History": {
+      "main": [
+        [
+          {
+            "node": "Generate HTML Dashboard",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate HTML Dashboard": {
+      "main": [
+        [
+          {
+            "node": "Save HTML Dashboard",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save HTML Dashboard": {
+      "main": [
+        [
+          {
+            "node": "Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "44a95b65-e8ad-41c1-be8a-91e909932bec",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "420da16e8a4bbbd9d07a488b082e20b52badc29a41dd5a8a3840782b3e7ae978"
+  },
+  "id": "xtLLNXaCN8R-_1y7dWree",
+  "tags": []
+}
