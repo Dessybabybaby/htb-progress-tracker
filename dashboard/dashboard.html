@@ -1,0 +1,65 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { background: #0a0e27; color: #e1e1e1; font-family: sans-serif; padding: 30px; }
+        .dashboard-container { max-width: 1100px; margin: auto; }
+        h1 { color: #9fef00; text-align: center; text-transform: uppercase; letter-spacing: 2px; }
+        .grid-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 30px; }
+        .card { background: rgba(255, 255, 255, 0.05); border: 1px solid #9fef0033; padding: 20px; border-radius: 8px; text-align: center; }
+        .card-val { display: block; font-size: 28px; font-weight: bold; color: #9fef00; }
+        .card-label { font-size: 12px; text-transform: uppercase; color: #888; margin-top: 5px; }
+        .chart-row { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 30px; }
+        .chart-container { background: rgba(255, 255, 255, 0.03); padding: 20px; border-radius: 8px; border: 1px solid #333; }
+        h3 { color: #9fef00; margin-top: 0; font-size: 16px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .table-container { background: rgba(255, 255, 255, 0.03); padding: 20px; border-radius: 8px; border: 1px solid #333; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { text-align: left; color: #9fef00; padding: 12px; border-bottom: 2px solid #333; }
+        td { padding: 12px; border-bottom: 1px solid #1a1a1a; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+        .linux { background: #9fef00; color: #000; }
+        .windows { background: #00a3ff; color: #fff; }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <h1>undefined's HTB Progress</h1>
+        <div class="grid-cards">
+            <div class="card"><span class="card-val">0</span><span class="card-label">Machines Pwned</span></div>
+            <div class="card"><span class="card-val">0</span><span class="card-label">Flags Captured</span></div>
+            <div class="card"><span class="card-val">0★</span><span class="card-label">Avg Rating</span></div>
+            <div class="card"><span class="card-val">N/A</span><span class="card-label">Current Rank</span></div>
+        </div>
+        <div class="chart-row">
+            <div class="chart-container"><h3>Progress Timeline</h3><canvas id="lineChart"></canvas></div>
+            <div class="chart-container"><h3>Difficulty Distribution</h3><canvas id="diffChart"></canvas></div>
+        </div>
+        <div class="table-container">
+            <h3>Recent Completions</h3>
+            <table>
+                <thead><tr><th>Machine</th><th>Difficulty</th><th>OS</th><th>Date</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+    <script>
+        new Chart(document.getElementById('lineChart'), {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{ label: 'Machines', data: [], borderColor: '#9fef00', fill: true, backgroundColor: 'rgba(159, 239, 0, 0.1)' }]
+            }
+        });
+        new Chart(document.getElementById('diffChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ["Easy","Medium","Hard","Insane"],
+                datasets: [{ data: [0,0,0,0], backgroundColor: ['#9fef00', '#00a3ff', '#ff5555', '#ffcc00'] }]
+            }
+        });
+    </script>
+</body>
+</html>
