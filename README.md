@@ -155,15 +155,13 @@ Full walkthrough available after workflow build.
 
 ### Example Dashboard
 
-![Dashboard Preview](media/dashboard-preview.png)
-
 **Sections:**
 
 **1. Overview Cards**
 ```
 ┌─────────────┬─────────────┬─────────────┬─────────────┐
 │ 42 Machines │ 84 Flags    │ 28 Days     │ 65% Linux   │
-│ Pwned       │ Captured    │ Avg Time    │ 35% Windows │
+│ Owned       │ Captured    │ Avg Time    │ 35% Windows │
 └─────────────┴─────────────┴─────────────┴─────────────┘
 ```
 
